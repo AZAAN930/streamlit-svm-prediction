@@ -7,34 +7,23 @@ Original file is located at
     https://colab.research.google.com/drive/1lLypiLEmP6qjDpcujnpm3q21B1Q5Qsen
 """
 
-# Importing necessary libraries
 import streamlit as st
 import joblib
 import pandas as pd
 
 # Load the saved model and scaler
-model_path = 'svm_model.pkl'  # Ensure the model file is in the correct directory
-scaler_path = 'scaler.pkl'  # Ensure the scaler file is in the correct directory
-
-try:
-    svm_model = joblib.load(model_path)
-    scaler = joblib.load(scaler_path)
-except Exception as e:
-    st.error(f"Error loading model or scaler: {str(e)}")
+model_path = 'svm_model.pkl'
+scaler_path = 'scaler.pkl'
+svm_model = joblib.load(model_path)
+scaler = joblib.load(scaler_path)
 
 # Function to preprocess input and make predictions
 def predict(input_data):
-    try:
-        # Convert the input data into a DataFrame
-        input_df = pd.DataFrame([input_data])
-        # Scale the input data
-        scaled_data = scaler.transform(input_df)
-        # Get prediction from the model
-        prediction = svm_model.predict(scaled_data)
-        return prediction[0]
-    except Exception as e:
-        st.error(f"Error in prediction: {str(e)}")
-        return None
+    # Ensure the columns match the training feature names
+    input_df = pd.DataFrame([input_data], columns=['Age', 'EstimatedSalary', 'Gender'])
+    scaled_data = scaler.transform(input_df)
+    prediction = svm_model.predict(scaled_data)
+    return prediction[0]
 
 # Streamlit app
 st.title("SVM Prediction App")
@@ -42,24 +31,22 @@ st.title("SVM Prediction App")
 # Input fields
 st.header("Enter Feature Values:")
 
-Feature1 = st.number_input("Feature 1", value=0.0)
-Feature2 = st.number_input("Feature 2", value=0.0)
-Feature3 = st.number_input("Feature 3", value=0.0)
-Feature4 = st.number_input("Feature 4", value=0.0)
+Age = st.number_input("Age", value=30)
+EstimatedSalary = st.number_input("Estimated Salary", value=50000)
+Gender = st.selectbox("Gender", ['Male', 'Female'])
 
-# Prediction button
+# Convert Gender to a numeric value (assuming 0 for Male and 1 for Female, adjust if necessary)
+Gender = 0 if Gender == 'Male' else 1
+
 if st.button("Predict"):
     user_input = {
-        'Feature1': Feature1,
-        'Feature2': Feature2,
-        'Feature3': Feature3,
-        'Feature4': Feature4
+        'Age': Age,
+        'EstimatedSalary': EstimatedSalary,
+        'Gender': Gender
     }
-    
-    # Make the prediction
-    result = predict(user_input)
-    
-    # Display the result
-    if result is not None:
+    try:
+        result = predict(user_input)
         st.subheader("Prediction Result:")
         st.write(f"The predicted class is: {result}")
+    except Exception as e:
+        st.write(f"Error in prediction: {e}")
