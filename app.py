@@ -19,8 +19,8 @@ scaler = joblib.load(scaler_path)
 
 # Function to preprocess input and make predictions
 def predict(input_data):
-    # Ensure the columns match the training feature names
-    input_df = pd.DataFrame([input_data], columns=['Age', 'EstimatedSalary', 'Gender'])
+    # Ensure the columns match the training feature names and order
+    input_df = pd.DataFrame([input_data], columns=['Gender', 'Age', 'EstimatedSalary'])  # Correct order
     scaled_data = scaler.transform(input_df)
     prediction = svm_model.predict(scaled_data)
     return prediction[0]
